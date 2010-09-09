@@ -225,12 +225,6 @@ class Mail_Postmark
 			throw new Exception("Invalid from address '{$this->_fromAddress}'");
 		}
 		
-        foreach ($this->_toAddress as $validateAddress) {
-		    if (!$this->_validateAddress($validateAddress)) {
-			    throw new Exception("Invalid to address '{$validateAddress}'");
-		    }
-		}
-		
 		if (isset($this->_replyToAddress) && !$this->_validateAddress($this->_replyToAddress)) {
 			throw new Exception("Invalid reply to address '{$this->_replyToAddress}'");
 		}
