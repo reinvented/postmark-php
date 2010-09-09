@@ -40,7 +40,7 @@ class Mail_Postmark
 	private $_fromAddress;
 	private $_tag;
 	private $_toName;
-	private $_toAddress;
+	private $_toAddress = array();
 	private $_replyToName;
 	private $_replyToAddress;
 	private $_cc = array();
@@ -129,8 +129,7 @@ class Mail_Postmark
 	*/
 	public function &to($address, $name = null)
 	{
-		$this->_toAddress = $address;
-		$this->_toName = $name;
+		$this->_toAddress[] = (is_null($name) ? $address : "$name <$address>");
 		return $this;
 	}
 	
@@ -226,15 +225,17 @@ class Mail_Postmark
 			throw new Exception("Invalid from address '{$this->_fromAddress}'");
 		}
 		
-		if (!$this->_validateAddress($this->_toAddress)) {
-			throw new Exception("Invalid to address '{$this->_toAddress}'");
+        foreach ($this->_toAddress as $validateAddress) {
+		    if (!$this->_validateAddress($validateAddress)) {
+			    throw new Exception("Invalid to address '{$validateAddress}'");
+		    }
 		}
 		
 		if (isset($this->_replyToAddress) && !$this->_validateAddress($this->_replyToAddress)) {
 			throw new Exception("Invalid reply to address '{$this->_replyToAddress}'");
 		}
 		
-		if (1 + count($this->_cc) + count($this->_bcc) > 20) {
+		if (count($this->_toAddress) + count($this->_cc) + count($this->_bcc) > 20) {
             throw new Exception("Too many email recipients");
 		}
 		
@@ -289,7 +290,7 @@ class Mail_Postmark
 		);
 		
 		$data['From'] = is_null($this->_fromName) ? $this->_fromAddress : "{$this->_fromName} <{$this->_fromAddress}>";
-		$data['To'] = is_null($this->_toName) ? $this->_toAddress : "{$this->_toName} <{$this->_toAddress}>";
+		$data['To'] = implode(',',$this->_toAddress);
 		
 		if (!is_null($this->_messageHtml)) {
 			$data['HtmlBody'] = $this->_messageHtml;
